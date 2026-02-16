@@ -1,9 +1,11 @@
 # /PriceParser/services/history.py
 
-from models import Product
-from datetime import datetime, timedelta
-import matplotlib.pyplot as plt
 import os
+from datetime import datetime, timedelta
+
+import matplotlib.pyplot as plt
+
+from models import Product
 
 
 def get_price_history(product_name=None, days=7):
@@ -16,7 +18,7 @@ def get_price_history(product_name=None, days=7):
     return [
         {
             "timestamp": record.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
-            "price": record.price
+            "price": record.price,
         }
         for record in query
     ]
@@ -27,7 +29,7 @@ def plot_price_history(data, product_name="product"):
     prices = [d["price"] for d in data]
 
     plt.figure(figsize=(10, 5))
-    plt.plot(dates, prices, marker='o')
+    plt.plot(dates, prices, marker="o")
     plt.title(f"Price History for {product_name}")
     plt.xlabel("Date")
     plt.ylabel("Price")
@@ -38,4 +40,3 @@ def plot_price_history(data, product_name="product"):
     plt.savefig(path)
     plt.close()
     return path
-

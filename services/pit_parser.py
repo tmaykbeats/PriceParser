@@ -2,19 +2,20 @@
 Адаптер для парсинга магазинов через PIT (product-inflation-tracker).
 Интегрирует синхронный код PIT в асинхронное окружение PriceParser.
 """
+
 import asyncio
-import sys
-import os
 import logging
+import os
+import sys
 from pathlib import Path
 
 # Добавляем путь к модулям PIT
-sys.path.insert(0, str(Path(__file__).parent / 'pit_integration'))
+sys.path.insert(0, str(Path(__file__).parent / "pit_integration"))
 
 logger = logging.getLogger(__name__)
 
 # Константы
-CONFIG_PATH = Path(__file__).parent / 'pit_integration' / 'store_config.txt'
+CONFIG_PATH = Path(__file__).parent / "pit_integration" / "store_config.txt"
 
 
 async def parse_config_async():
@@ -22,11 +23,13 @@ async def parse_config_async():
     Асинхронно загружает конфигурацию магазинов из файла.
     Возвращает список конфигураций в формате словаря.
     """
+
     # Синхронную операцию чтения файла выполняем в отдельном потоке
     def load_config():
         from store_productscraper import parse_config
+
         return parse_config(str(CONFIG_PATH))
-    
+
     loop = asyncio.get_event_loop()
     configs = await loop.run_in_executor(None, load_config)
     logger.info(f"Загружено {len(configs)} конфигураций магазинов")
@@ -41,8 +44,8 @@ async def fetch_page_async(url, use_selenium=True):
         use_selenium (bool): если True, использует Selenium; иначе requests.
     Возвращает HTML (str) или None при ошибке.
     """
-    from store_productscraper import fetch_page_selenium, fetch_page_requests
-    
+    from store_productscraper import fetch_page_requests, fetch_page_selenium
+
     def fetch():
         if use_selenium:
             return fetch_page_selenium(url)
@@ -50,7 +53,7 @@ async def fetch_page_async(url, use_selenium=True):
             # fetch_page_requests возвращает BeautifulSoup, преобразуем в HTML
             soup = fetch_page_requests(url)
             return str(soup) if soup else None
-    
+
     loop = asyncio.get_event_loop()
     try:
         html = await loop.run_in_executor(None, fetch)
@@ -60,7 +63,7 @@ async def fetch_page_async(url, use_selenium=True):
         return None
 
 
-async def extract_product_data_async(config, variant='cheapest'):
+async def extract_product_data_async(config, variant="cheapest"):
     """
     Извлекает данные о продукте для заданной конфигурации и варианта.
     Возвращает словарь с полями:
@@ -69,69 +72,77 @@ async def extract_product_data_async(config, variant='cheapest'):
     Если данные не найдены, возвращает None.
     """
     from store_productscraper import extract_data_from_template
-    
-    url = config['URLS'].get(variant)
+
+    url = config["URLS"].get(variant)
     if not url:
-        logger.warning(f"URL для варианта {variant} не указан в конфигурации {config['STORE']}")
+        logger.warning(
+            f"URL для варианта {variant} не указан в конфигурации {config['STORE']}"
+        )
         return None
-    
+
     # Загружаем страницу (используем Selenium, так как большинство магазинов требуют JS)
     html = await fetch_page_async(url, use_selenium=True)
     if not html:
         return None
-    
+
     # Извлекаем заголовок и цену по шаблону
     def extract():
-        title = extract_data_from_template(config['TITLE'], html)
-        price = extract_data_from_template(config['PRICE'], html)
+        title = extract_data_from_template(config["TITLE"], html)
+        price = extract_data_from_template(config["PRICE"], html)
         return title, price
-    
+
     loop = asyncio.get_event_loop()
     try:
         title, price = await loop.run_in_executor(None, extract)
     except Exception as e:
         logger.error(f"Ошибка извлечения данных для {config['STORE']}: {e}")
         return None
-    
+
     # Если нет данных, пропускаем
     if not title or not price:
-        logger.warning(f"Не удалось извлечь title или price для {config['STORE']} - {config['PRODUCT']}")
+        logger.warning(
+            f"Не удалось извлечь title или price для {config['STORE']} - {config['PRODUCT']}"
+        )
         return None
-    
+
     # Извлекаем информацию об упаковке и рассчитываем цену за единицу
     # Используем функции из store_productscraper
     from store_productscraper import (
-        extract_package_info, extract_price_info, calculate_price_per_unit,
-        UNIT_BASE_LABELS
+        UNIT_BASE_LABELS,
+        calculate_price_per_unit,
+        extract_package_info,
+        extract_price_info,
     )
-    
+
     # Извлекаем числовую цену и валюту
-    price_number, currency = extract_price_info(price, config.get('CURRENCY_MAP', {}))
+    price_number, currency = extract_price_info(price, config.get("CURRENCY_MAP", {}))
     # Извлекаем размер упаковки
     package_string, package_size, package_unit = extract_package_info(title)
     # Вычисляем цену за единицу
     price_per_unit_string, price_per_unit_number = calculate_price_per_unit(
         price_number, package_size, package_unit, currency
     )
-    
+
     # Формируем результат
     result = {
-        'store': config['STORE'],
-        'country': config['COUNTRY'],
-        'product_name': config['PRODUCT'],
-        'variant': variant,
-        'full_name': title,
-        'full_price': price,
-        'price': price_number,
-        'currency': currency,
-        'unit_size': package_size,
-        'unit_type': package_unit,
-        'price_per_unit': price_per_unit_number,
-        'price_per_unit_string': price_per_unit_string,
-        'external_id': None,  # можно сгенерировать хэш
+        "store": config["STORE"],
+        "country": config["COUNTRY"],
+        "product_name": config["PRODUCT"],
+        "variant": variant,
+        "full_name": title,
+        "full_price": price,
+        "price": price_number,
+        "currency": currency,
+        "unit_size": package_size,
+        "unit_type": package_unit,
+        "price_per_unit": price_per_unit_number,
+        "price_per_unit_string": price_per_unit_string,
+        "external_id": None,  # можно сгенерировать хэш
     }
-    
-    logger.info(f"Извлечены данные: {config['STORE']} - {config['PRODUCT']} цена {price_number} {currency}")
+
+    logger.info(
+        f"Извлечены данные: {config['STORE']} - {config['PRODUCT']} цена {price_number} {currency}"
+    )
     return result
 
 
@@ -145,40 +156,45 @@ async def run_pit_parsing(store_filter=None, product_filter=None):
     """
     configs = await parse_config_async()
     results = []
-    
+
     for config in configs:
-        store = config['STORE']
-        product = config['PRODUCT']
-        
+        store = config["STORE"]
+        product = config["PRODUCT"]
+
         if store_filter and store not in store_filter:
             continue
         if product_filter and product not in product_filter:
             continue
-        
+
         # Обрабатываем оба варианта (cheapest, most_expensive)
-        for variant in ['cheapest', 'most_expensive']:
-            if variant not in config['URLS'] or not config['URLS'][variant]:
+        for variant in ["cheapest", "most_expensive"]:
+            if variant not in config["URLS"] or not config["URLS"][variant]:
                 continue
-            
+
             data = await extract_product_data_async(config, variant)
             if data:
                 results.append(data)
-    
+
     logger.info(f"Парсинг завершен, собрано {len(results)} записей")
     return results
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Тестирование модуля
     import asyncio
+
     logging.basicConfig(level=logging.INFO)
-    
+
     async def test():
         print("Запуск тестового парсинга PIT...")
-        results = await run_pit_parsing(store_filter=['Auchan'], product_filter=['Milk'])
+        results = await run_pit_parsing(
+            store_filter=["Auchan"], product_filter=["Milk"]
+        )
         for r in results:
-            print(f"{r['store']} - {r['product_name']}: {r['price']} {r['currency']}, "
-                  f"упаковка {r['unit_size']} {r['unit_type']}, "
-                  f"цена за единицу {r['price_per_unit']}")
-    
+            print(
+                f"{r['store']} - {r['product_name']}: {r['price']} {r['currency']}, "
+                f"упаковка {r['unit_size']} {r['unit_type']}, "
+                f"цена за единицу {r['price_per_unit']}"
+            )
+
     asyncio.run(test())

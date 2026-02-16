@@ -1,6 +1,7 @@
-import sqlite3
 import json
 import os
+import sqlite3
+
 
 def extract_product_inflation():
     # Define file paths (assuming script and DB are in the same folder)
@@ -14,7 +15,7 @@ def extract_product_inflation():
 
     # SQL query to join tables and extract required fields
     query = """
-    SELECT 
+    SELECT
         ps.date,
         ps.variant,
         pt.name AS product_type_name,
@@ -28,7 +29,6 @@ def extract_product_inflation():
     """
     ##Extract only specified pruduct type (bread) and variant (cheapest)
     ##WHERE ps.variant = 'cheapest' AND ps.product_type_id = 1
-    
 
     # Execute the query and fetch results
     cursor.execute(query)
@@ -37,12 +37,13 @@ def extract_product_inflation():
     data = [dict(zip(columns, row)) for row in rows]
 
     # Save data to JSON
-    with open(json_path, 'w', encoding='utf-8') as json_file:
+    with open(json_path, "w", encoding="utf-8") as json_file:
         json.dump(data, json_file, indent=2, ensure_ascii=False)
 
     # Cleanup
     conn.close()
     print(f"Exported {len(data)} records to {json_path}")
+
 
 if __name__ == "__main__":
     extract_product_inflation()

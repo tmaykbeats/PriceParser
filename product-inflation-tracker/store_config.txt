@@ -16,7 +16,7 @@ CURRENCY_MAP = ["$": "CAD"]
 
 URLS = [
 cheapest: https://www.nofrills.ca/en/food/bakery/bread/c/28251?sort=price-asc&page=1
-most_expensive: 
+most_expensive:
 ]
 
 ===
@@ -37,7 +37,7 @@ CURRENCY_MAP = ["$": "USD"]
 
 URLS = [
 cheapest: https://www.walmart.com/browse/food/white-bread/976759_976779_8399244_6065814?sort=price_low
-most_expensive: 
+most_expensive:
 ]
 
 ===
@@ -84,7 +84,7 @@ CURRENCY_MAP = ["$": "MXN"]
 
 URLS = [
 cheapest: https://www.heb.com.mx/pan-empacado/pan-blanco?order=OrderByPriceASC
-most_expensive: 
+most_expensive:
 ]
 
 ===
@@ -106,7 +106,7 @@ CURRENCY_MAP = ["€": "EUR"]
 
 URLS = [
 cheapest: https://shop.billa.at/kategorie/brot-verpackt-15535?sortBy=price&sortOrder=asc
-most_expensive: 
+most_expensive:
 ]
 
 ===
@@ -127,7 +127,7 @@ CURRENCY_MAP = ["€": "EUR"]
 
 URLS = [
 cheapest: https://www.hipercor.es/supermercado/desayunos-dulces-y-pan/pan/pan-de-molde-blanco/?sort=priceAsc
-most_expensive: 
+most_expensive:
 ]
 
 ===
@@ -137,7 +137,7 @@ COUNTRY = Kazakhstan
 PRODUCT = Bread
 
 TITLE = [
-<a draggable="false" class="product-card__title"> FFF </a> 
+<a draggable="false" class="product-card__title"> FFF </a>
 ]
 
 PRICE = [
@@ -148,7 +148,7 @@ CURRENCY_MAP = ["₸": "KZT"]
 
 URLS = [
 cheapest: https://arbuz.kz/ru/almaty/catalog/cat/20118-hleb#/?%5B%7B%22slug%22%3A%22sort%5Bprice%5D%22,%22value%22%3A1,%22name%22%3A%22%D0%9F%D0%BE%20%D0%B2%D0%BE%D0%B7%D1%80%D0%B0%D1%81%D1%82%D0%B0%D0%BD%D0%B8%D1%8E%22,%22component%22%3A%22sort%22%7D%5D
-most_expensive: 
+most_expensive:
 ]
 
 ===
@@ -169,7 +169,7 @@ CURRENCY_MAP = ["₽": "RUB"]
 
 URLS = [
 cheapest: https://www.auchan.ru/catalog/hlebnaya-vypechka/hleb/batony/?sort=price_asc
-most_expensive: 
+most_expensive:
 ]
 
 ===
@@ -190,7 +190,7 @@ CURRENCY_MAP = ["₽": "RUB"]
 
 URLS = [
 cheapest: https://www.auchan.ru/catalog/moloko-syr-yayca/moloko-slivki-molochnye-kokteyli-i-sguschennoe-moloko/moloko/?sort=price_asc
-most_expensive: 
+most_expensive:
 ]
 
 ===
@@ -211,7 +211,7 @@ CURRENCY_MAP = ["₽": "RUB"]
 
 URLS = [
 cheapest: https://www.auchan.ru/catalog/moloko-syr-yayca/yayco/yayco-kurinoe/?sort=price_asc
-most_expensive: 
+most_expensive:
 ]
 
 ===
@@ -235,7 +235,7 @@ CURRENCY_MAP = ["грн": "ГРН"]
 
 URLS = [
 cheapest: https://www.atbmarket.com/catalog/398-moloko?sort=price
-most_expensive: 
+most_expensive:
 ]
 
 ===
@@ -256,7 +256,7 @@ CURRENCY_MAP = ["$": "USD"]
 
 URLS = [
 cheapest: https://www.walmart.com/browse/food/whole-milk/976759_9176907_4405816_6541475_6877499?sort=price_low
-most_expensive: 
+most_expensive:
 ]
 
 
@@ -280,7 +280,7 @@ CURRENCY_MAP = ["KShs": "KES"]
 
 URLS = [
 cheapest: https://naivas.online/search?term=bread&sort=price&order=asc
-most_expensive: 
+most_expensive:
 ]
 
 ===
@@ -301,7 +301,7 @@ CURRENCY_MAP = ["$": "CLP"]
 
 URLS = [
 cheapest: https://www.jumbo.cl/panaderia-y-pasteleria/panaderia-envasada?o=OrderByPriceASC
-most_expensive: 
+most_expensive:
 ]
 
 ===
@@ -322,5 +322,5 @@ CURRENCY_MAP = ["Kč": "CZK"]
 
 URLS = [
 cheapest: https://www.albert.cz/search-results?q=chl%C3%A9b%3Aprice-asc%3AfirstLevelCategories%3AzeF001&text=chl%C3%A9b%20&sort=price-asc
-most_expensive: 
+most_expensive:
 ]

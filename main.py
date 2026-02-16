@@ -4,7 +4,7 @@
 # для корректной работы этого бота я загнузил эти пакеты
 # pip install aiogram==2.21 aiohttp==3.8.1
 # содержит только тот код который нужен для старта и управления ботом.
-# 
+#
 
 # Комментарии:
 
@@ -14,21 +14,24 @@
 # register_handlers: Подключает команды и кнопки из handlers.py.
 # start_polling: Запускает бота, чтобы он слушал сообщения.
 
-import logging
 import asyncio
+import logging
+import time
+
+import schedule
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+
 from config import BOT_TOKEN
 from handlers import register_handlers
-from services.parser import scrape_prices
 from services.notifier import notify_subscribers
-from services.pit_parser import run_pit_parsing
+from services.parser import scrape_prices
 from services.pit_db import save_pit_results
-import schedule
-import time
+from services.pit_parser import run_pit_parsing
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 async def main():
     logger.info("Starting PriceParser...")
@@ -42,7 +45,9 @@ async def main():
     schedule.every(1).minutes.do(lambda: asyncio.create_task(scrape_and_notify(bot)))
 
     # Schedule PIT parsing daily at 02:00
-    schedule.every().day.at("02:00").do(lambda: asyncio.create_task(pit_parse_and_save()))
+    schedule.every().day.at("02:00").do(
+        lambda: asyncio.create_task(pit_parse_and_save())
+    )
 
     # Run scheduler in background
     async def run_scheduler():
@@ -53,12 +58,14 @@ async def main():
     # Start polling and scheduler
     await asyncio.gather(dp.start_polling(), run_scheduler())
 
+
 async def scrape_and_notify(bot):
     try:
         prices = await scrape_prices()
         await notify_subscribers(bot, prices)
     except Exception as e:
         logger.error(f"Error in scrape_and_notify: {str(e)}")
+
 
 async def pit_parse_and_save():
     """
@@ -74,6 +81,7 @@ async def pit_parse_and_save():
             logger.warning("PIT parsing returned no results")
     except Exception as e:
         logger.error(f"Error in PIT parsing: {str(e)}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

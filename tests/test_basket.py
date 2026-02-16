@@ -1,14 +1,15 @@
 import pytest
+
 from models import Basket, BasketItem, Product
 from services.basket import (
-    create_basket,
-    get_user_baskets,
-    get_basket,
     add_to_basket,
-    remove_from_basket,
     calculate_basket_total,
-    get_basket_items,
+    create_basket,
     delete_basket,
+    get_basket,
+    get_basket_items,
+    get_user_baskets,
+    remove_from_basket,
 )
 
 
@@ -17,10 +18,10 @@ class TestBasketCreation:
 
     def test_create_basket(self, sample_user_id, test_database):
         """Тест создания корзины."""
-        basket = create_basket(sample_user_id, name='Тестовая корзина')
+        basket = create_basket(sample_user_id, name="Тестовая корзина")
         assert basket.id is not None
         assert basket.user_id == sample_user_id
-        assert basket.name == 'Тестовая корзина'
+        assert basket.name == "Тестовая корзина"
         # Проверяем, что корзина сохранена в БД
         fetched = Basket.get_by_id(basket.id)
         assert fetched.user_id == sample_user_id
@@ -28,17 +29,14 @@ class TestBasketCreation:
     def test_create_basket_default_name(self, sample_user_id, test_database):
         """Тест создания корзины с именем по умолчанию."""
         basket = create_basket(sample_user_id)
-        assert basket.name == 'Моя корзина'
+        assert basket.name == "Моя корзина"
 
     def test_get_user_baskets(self, sample_user_id, test_database):
         """Тест получения всех корзин пользователя."""
         # Создадим три корзины для одного пользователя
-        baskets = [
-            create_basket(sample_user_id, name=f'Корзина {i}')
-            for i in range(3)
-        ]
+        baskets = [create_basket(sample_user_id, name=f"Корзина {i}") for i in range(3)]
         # Создадим корзину для другого пользователя
-        create_basket(999, name='Чужая корзина')
+        create_basket(999, name="Чужая корзина")
         user_baskets = list(get_user_baskets(sample_user_id))
         assert len(user_baskets) == 3
         # Проверяем, что все корзины принадлежат правильному пользователю
@@ -100,13 +98,13 @@ class TestAddToBasket:
         """Тест добавления в несуществующую корзину."""
         with pytest.raises(ValueError) as exc:
             add_to_basket(99999, sample_product.id)
-        assert 'не найдена' in str(exc.value)
+        assert "не найдена" in str(exc.value)
 
     def test_add_to_basket_invalid_product(self, sample_basket):
         """Тест добавления несуществующего товара."""
         with pytest.raises(ValueError) as exc:
             add_to_basket(sample_basket.id, 99999)
-        assert 'не найден' in str(exc.value)
+        assert "не найден" in str(exc.value)
 
 
 class TestRemoveFromBasket:
@@ -141,7 +139,7 @@ class TestCalculateBasketTotal:
         add_to_basket(sample_basket.id, sample_product.id, quantity=2.0)
         # Создадим второй товар с другой ценой
         product2 = Product.create(
-            name='Товар 2', price=200.0, category='еда', store='Auchan'
+            name="Товар 2", price=200.0, category="еда", store="Auchan"
         )
         add_to_basket(sample_basket.id, product2.id, quantity=1.5)
         # Ожидаемая сумма: 100*2 + 200*1.5 = 200 + 300 = 500
@@ -152,7 +150,7 @@ class TestCalculateBasketTotal:
         """Тест расчёта для несуществующей корзины."""
         with pytest.raises(ValueError) as exc:
             calculate_basket_total(99999)
-        assert 'не найдена' in str(exc.value)
+        assert "не найдена" in str(exc.value)
 
 
 class TestGetBasketItems:
@@ -217,7 +215,7 @@ class TestAccessControl:
     def test_user_cannot_access_other_user_basket(self, sample_basket, sample_user_id):
         """Пользователь не должен видеть корзины другого пользователя."""
         # Создадим корзину для другого пользователя
-        other_basket = create_basket(999, name='Чужая корзина')
+        other_basket = create_basket(999, name="Чужая корзина")
         # Получим все корзины первого пользователя
         user_baskets = list(get_user_baskets(sample_user_id))
         assert len(user_baskets) == 1
@@ -227,9 +225,9 @@ class TestAccessControl:
     def test_add_to_other_user_basket_should_fail(self, sample_user_id):
         """Попытка добавить товар в чужую корзину должна вызывать ошибку."""
         # Создадим корзину другого пользователя
-        other_basket = create_basket(999, name='Чужая корзина')
+        other_basket = create_basket(999, name="Чужая корзина")
         # Создадим товар
-        product = Product.create(name='Товар', price=100, category='еда')
+        product = Product.create(name="Товар", price=100, category="еда")
         # Функция add_to_basket не проверяет принадлежность пользователя,
         # только существование корзины. Поэтому добавление пройдёт.
         # Это может быть упущением безопасности, но тестируем как есть.
@@ -239,7 +237,7 @@ class TestAccessControl:
     def test_calculate_total_other_user_basket(self):
         """Расчёт стоимости чужой корзины возможен, если известен ID."""
         other_basket = create_basket(999)
-        product = Product.create(name='Товар', price=100, category='еда')
+        product = Product.create(name="Товар", price=100, category="еда")
         add_to_basket(other_basket.id, product.id, quantity=2)
         total = calculate_basket_total(other_basket.id)
         assert total == 200.0
@@ -275,8 +273,13 @@ class TestEdgeCases:
         """Проверка, что используется price, а не price_per_unit."""
         # Создадим товар с price и price_per_unit
         product = Product.create(
-            name='Молоко', price=80.0, price_per_unit=90.0,
-            unit_size=1.0, unit_type='л', store='Auchan', category='pit'
+            name="Молоко",
+            price=80.0,
+            price_per_unit=90.0,
+            unit_size=1.0,
+            unit_type="л",
+            store="Auchan",
+            category="pit",
         )
         add_to_basket(sample_basket.id, product.id, quantity=2.0)
         total = calculate_basket_total(sample_basket.id)

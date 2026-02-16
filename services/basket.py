@@ -1,8 +1,10 @@
 """
 Модуль для работы с корзиной покупок.
 """
-from models import Basket, BasketItem, Product
+
 from peewee import DoesNotExist
+
+from models import Basket, BasketItem, Product
 
 
 def create_basket(user_id, name="Моя корзина"):
@@ -13,7 +15,11 @@ def create_basket(user_id, name="Моя корзина"):
 
 def get_user_baskets(user_id):
     """Получить все корзины пользователя."""
-    return Basket.select().where(Basket.user_id == user_id).order_by(Basket.created_at.desc())
+    return (
+        Basket.select()
+        .where(Basket.user_id == user_id)
+        .order_by(Basket.created_at.desc())
+    )
 
 
 def get_basket(basket_id):
@@ -35,9 +41,11 @@ def add_to_basket(basket_id, product_id, quantity=1.0):
         raise ValueError(f"Товар с ID {product_id} не найден")
 
     # Проверяем, есть ли уже такой товар в корзине
-    existing_item = BasketItem.select().where(
-        (BasketItem.basket == basket) & (BasketItem.product == product)
-    ).first()
+    existing_item = (
+        BasketItem.select()
+        .where((BasketItem.basket == basket) & (BasketItem.product == product))
+        .first()
+    )
     if existing_item:
         # Увеличиваем количество
         existing_item.quantity += quantity

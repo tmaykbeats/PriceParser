@@ -47,7 +47,7 @@ Prices split across multiple nested HTML elements requiring complex parsing:
 ```html
 <div class="product-price">
   <data class="product-price__top">
-    <span>20<span class="product-price__coin">90</span></span> 
+    <span>20<span class="product-price__coin">90</span></span>
   </data>
 </div>
 ```
@@ -89,7 +89,7 @@ CURRENCY_MAP = ["$": "USD"]
 
 URLS = [
 cheapest: https://www.store.com/search?q=bread&sort=price_low
-most_expensive: 
+most_expensive:
 ]
 ```
 
@@ -170,12 +170,12 @@ def extract_data_from_template(template_lines, page_html):
     template_html = '\n'.join(template_lines)
     template_soup = BeautifulSoup(template_html, 'html.parser')
     page_soup = BeautifulSoup(page_html, 'html.parser')
-    
+
     # Process each template element containing FFF
     for template_element in template_soup.find_all():
         if 'FFF' not in template_element.decode():
             continue
-        
+
         matching_element = find_matching_element(page_soup, template_element)
         # Extract and process data...
 ```

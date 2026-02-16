@@ -1,5 +1,6 @@
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
 
 # Загружаем .env
 load_dotenv()
@@ -15,7 +16,9 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
     print("Error: BOT_TOKEN is not set in .env")
 else:
-    print(f"BOT_TOKEN loaded: {BOT_TOKEN[:10]}...")  # Показываем первые 10 символов для безопасности
+    print(
+        f"BOT_TOKEN loaded: {BOT_TOKEN[:10]}..."
+    )  # Показываем первые 10 символов для безопасности
 
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))

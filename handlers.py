@@ -1,24 +1,28 @@
 # ~/PriceParser/handlers.py
 
 import logging
-from aiogram import types, Dispatcher
+
+from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
-from utils import save_prices, get_latest_prices, get_previous_prices
-from services.parser import scrape_prices
-from services.history import get_price_history, plot_price_history
+
 from models import Subscription
-from services.pit_handlers import register_pit_handlers
 from services.basket_handlers import register_basket_handlers
-
-
+from services.history import get_price_history, plot_price_history
+from services.parser import scrape_prices
+from services.pit_handlers import register_pit_handlers
+from utils import get_latest_prices, get_previous_prices, save_prices
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 async def start(message: types.Message, state: FSMContext):
     await state.finish()
     logger.info(f"User {message.from_user.id} started bot")
-    await message.reply("Welcome to PriceParser! Use /subscribe to receive price updates or /report for the latest prices.")
+    await message.reply(
+        "Welcome to PriceParser! Use /subscribe to receive price updates or /report for the latest prices."
+    )
+
 
 async def subscribe(message: types.Message, state: FSMContext):
     await state.finish()
@@ -27,6 +31,7 @@ async def subscribe(message: types.Message, state: FSMContext):
     logger.info(f"User {user_id} subscribed")
     await message.reply("You are now subscribed to hourly price reports.")
 
+
 async def unsubscribe(message: types.Message, state: FSMContext):
     await state.finish()
     user_id = message.from_user.id
@@ -34,7 +39,9 @@ async def unsubscribe(message: types.Message, state: FSMContext):
     logger.info(f"User {user_id} unsubscribed")
     await message.reply("You have unsubscribed from price reports.")
 
+
 from aiogram.dispatcher.filters import Command
+
 
 # Команда /sort — переключение сортировки между "name" и "price"
 async def sort_command(message: types.Message, state: FSMContext):
@@ -42,7 +49,10 @@ async def sort_command(message: types.Message, state: FSMContext):
     sort_by = current_sort.get("sort_by", "name")
     new_sort = "price" if sort_by == "name" else "name"
     await state.update_data(sort_by=new_sort)
-    await message.reply(f"Sorting method switched to *{new_sort}*.", parse_mode="Markdown")
+    await message.reply(
+        f"Sorting method switched to *{new_sort}*.", parse_mode="Markdown"
+    )
+
 
 # Команда /help — описание всех команд
 async def help_command(message: types.Message):
@@ -69,6 +79,7 @@ async def help_command(message: types.Message):
     )
     await message.reply(help_text)
 
+
 # Обновлённая команда /report с учётом сортировки из состояния
 async def report(message: types.Message, state: FSMContext):
     await state.finish()
@@ -83,11 +94,11 @@ async def report(message: types.Message, state: FSMContext):
 
         categories = {}
         for name, data_price in prices.items():
-            category = data_price.get('category', 'uncategorized')
+            category = data_price.get("category", "uncategorized")
             if category not in categories:
                 categories[category] = []
             old_price = previous.get(name)
-            new_price = data_price['price']
+            new_price = data_price["price"]
             if old_price is None:
                 change = "🆕"
             elif old_price == new_price:
@@ -131,12 +142,12 @@ async def report_changes_command(message: types.Message, state: FSMContext):
 
         categories = {}
         for name, data_price in prices.items():
-            category = data_price.get('category', 'uncategorized')
+            category = data_price.get("category", "uncategorized")
             if category not in categories:
                 categories[category] = []
 
             old_price = previous.get(name)
-            new_price = data_price['price']
+            new_price = data_price["price"]
 
             # Только изменения (включая новые)
             if old_price is None:
@@ -182,7 +193,7 @@ async def history_command(message: types.Message):
     img_path = plot_price_history(history)
 
     # Отправляем картинку пользователю
-    with open(img_path, 'rb') as photo:
+    with open(img_path, "rb") as photo:
         await message.answer_photo(photo, caption="Price history for the last 7 days")
 
 
@@ -193,22 +204,22 @@ async def notify_change_toggle(message: types.Message):
     sub.notify_only_on_change = not sub.notify_only_on_change
     sub.save()
     status = "enabled" if sub.notify_only_on_change else "disabled"
-    await message.reply(f"Notify only on price changes is now *{status}*.", parse_mode="Markdown")
+    await message.reply(
+        f"Notify only on price changes is now *{status}*.", parse_mode="Markdown"
+    )
 
 
 def register_handlers(dp: Dispatcher):
-    dp.register_message_handler(start, commands=['start'])
-    dp.register_message_handler(subscribe, commands=['subscribe'])
-    dp.register_message_handler(unsubscribe, commands=['unsubscribe'])
-    dp.register_message_handler(report, commands=['report'])
-    dp.register_message_handler(sort_command, commands=['sort'])
-    dp.register_message_handler(help_command, commands=['help'])
-    dp.register_message_handler(history_command, commands=['history'])
-    dp.register_message_handler(notify_change_toggle, commands=['notifychange'])
-    dp.register_message_handler(report_changes_command, commands=['reportchanges'])
+    dp.register_message_handler(start, commands=["start"])
+    dp.register_message_handler(subscribe, commands=["subscribe"])
+    dp.register_message_handler(unsubscribe, commands=["unsubscribe"])
+    dp.register_message_handler(report, commands=["report"])
+    dp.register_message_handler(sort_command, commands=["sort"])
+    dp.register_message_handler(help_command, commands=["help"])
+    dp.register_message_handler(history_command, commands=["history"])
+    dp.register_message_handler(notify_change_toggle, commands=["notifychange"])
+    dp.register_message_handler(report_changes_command, commands=["reportchanges"])
     # Регистрация обработчиков PIT
     register_pit_handlers(dp)
     # Регистрация обработчиков корзины
     register_basket_handlers(dp)
-
-

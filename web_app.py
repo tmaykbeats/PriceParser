@@ -1,47 +1,53 @@
 # /PriceParser/web_app.py
 
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-from services.history import get_price_history, plot_price_history
-from models import Product
-from peewee import fn
 import os
 
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from peewee import fn
+
+from models import Product
+from services.history import get_price_history, plot_price_history
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+
 @app.get("/favicon.ico")
 def favicon():
     return HTMLResponse(content="", status_code=204)
+
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     # Берём последние цены по каждому товару (с самым новым timestamp)
     subquery = Product.select(
-        Product.name, fn.MAX(Product.timestamp).alias('max_time')
+        Product.name, fn.MAX(Product.timestamp).alias("max_time")
     ).group_by(Product.name)
 
-    query = (Product
-             .select()
-             .join(subquery, on=(
-                 (Product.name == subquery.c.name) &
-                 (Product.timestamp == subquery.c.max_time)
-             ))
-             .order_by(Product.category, Product.name))
+    query = (
+        Product.select()
+        .join(
+            subquery,
+            on=(
+                (Product.name == subquery.c.name)
+                & (Product.timestamp == subquery.c.max_time)
+            ),
+        )
+        .order_by(Product.category, Product.name)
+    )
 
     # Группируем по категориям
     categories = {}
     for product in query:
         categories.setdefault(product.category, []).append(product)
 
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "categories": categories
-    })
+    return templates.TemplateResponse(
+        "index.html", {"request": request, "categories": categories}
+    )
 
 
 @app.get("/history/{product_name}", response_class=HTMLResponse)
@@ -51,11 +57,14 @@ async def history(request: Request, product_name: str):
         raise HTTPException(status_code=404, detail="No history found")
 
     img_path = plot_price_history(history, product_name)
-    return templates.TemplateResponse("history.html", {
-        "request": request,
-        "product_name": product_name,
-        "image_url": f"/static/{os.path.basename(img_path)}"
-    })
+    return templates.TemplateResponse(
+        "history.html",
+        {
+            "request": request,
+            "product_name": product_name,
+            "image_url": f"/static/{os.path.basename(img_path)}",
+        },
+    )
 
 
 @app.get("/api/products")
@@ -80,20 +89,18 @@ def api_products(request: Request):
             "name": p.name,
             "price": p.price,
             "category": p.category,
-            "timestamp": p.timestamp.isoformat()
+            "timestamp": p.timestamp.isoformat(),
         }
         for p in products
     ]
     return JSONResponse(content=data)
 
 
-
 @app.get("/api/products/{name}")
 def get_product_by_name(name: str):
     try:
         product = (
-            Product
-            .select()
+            Product.select()
             .where(Product.name == name)
             .order_by(Product.timestamp.desc())
             .get()
@@ -102,7 +109,7 @@ def get_product_by_name(name: str):
             "name": product.name,
             "price": product.price,
             "category": product.category,
-            "timestamp": product.timestamp.isoformat()
+            "timestamp": product.timestamp.isoformat(),
         }
     except Product.DoesNotExist:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -123,7 +130,7 @@ def api_products(request: Request):
             "name": p.name,
             "price": p.price,
             "category": p.category,
-            "timestamp": p.timestamp.isoformat()
+            "timestamp": p.timestamp.isoformat(),
         }
         for p in products
     ]
@@ -133,4 +140,6 @@ def api_products(request: Request):
 @app.get("/products", response_class=HTMLResponse)
 def products_page(request: Request):
     products = Product.select().order_by(Product.name)
-    return templates.TemplateResponse("products.html", {"request": request, "products": products})
+    return templates.TemplateResponse(
+        "products.html", {"request": request, "products": products}
+    )

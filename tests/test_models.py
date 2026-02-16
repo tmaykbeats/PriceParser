@@ -1,27 +1,29 @@
-import pytest
 from datetime import datetime
-from models import Product, PriceHistory, Basket, BasketItem, Subscription
+
+import pytest
+
+from models import Basket, BasketItem, PriceHistory, Product, Subscription
 
 
 def test_product_creation(sample_product):
     """Тест создания товара с новыми полями."""
     assert sample_product.id is not None
-    assert sample_product.name == 'Тестовый товар'
+    assert sample_product.name == "Тестовый товар"
     assert sample_product.price == 100.0
-    assert sample_product.category == 'еда'
-    assert sample_product.store == 'Auchan'
+    assert sample_product.category == "еда"
+    assert sample_product.store == "Auchan"
     assert sample_product.unit_size == 1.0
-    assert sample_product.unit_type == 'л'
+    assert sample_product.unit_type == "л"
     assert sample_product.price_per_unit == 100.0
-    assert sample_product.external_id == 'test_123'
+    assert sample_product.external_id == "test_123"
     assert isinstance(sample_product.timestamp, datetime)
 
 
 def test_product_defaults(test_database):
     """Тест значений по умолчанию для товара."""
-    product = Product.create(name='Товар без доп полей', price=50.0)
-    assert product.category == 'uncategorized'
-    assert product.store == 'unknown'
+    product = Product.create(name="Товар без доп полей", price=50.0)
+    assert product.category == "uncategorized"
+    assert product.store == "unknown"
     assert product.unit_size is None
     assert product.unit_type is None
     assert product.price_per_unit is None
@@ -48,14 +50,14 @@ def test_price_history_creation(sample_product):
         product=sample_product,
         price=105.0,
         unit_size=1.0,
-        unit_type='л',
-        price_per_unit=105.0
+        unit_type="л",
+        price_per_unit=105.0,
     )
     assert history.id is not None
     assert history.product == sample_product
     assert history.price == 105.0
     assert history.unit_size == 1.0
-    assert history.unit_type == 'л'
+    assert history.unit_type == "л"
     assert history.price_per_unit == 105.0
     assert isinstance(history.timestamp, datetime)
     # Проверяем связь обратной ссылки
@@ -74,14 +76,14 @@ def test_basket_creation(sample_basket, sample_user_id):
     """Тест создания корзины."""
     assert sample_basket.id is not None
     assert sample_basket.user_id == sample_user_id
-    assert sample_basket.name == 'Тестовая корзина'
+    assert sample_basket.name == "Тестовая корзина"
     assert isinstance(sample_basket.created_at, datetime)
 
 
 def test_basket_default_name(sample_user_id, test_database):
     """Тест имени корзины по умолчанию."""
     basket = Basket.create(user_id=sample_user_id)
-    assert basket.name == 'Моя корзина'
+    assert basket.name == "Моя корзина"
 
 
 def test_basket_item_creation(sample_basket_item, sample_basket, sample_product):
@@ -110,7 +112,9 @@ def test_basket_delete_cascade(test_database, sample_basket, sample_product):
     sample_basket.delete_instance()
     # В текущей модели каскадного удаления нет, элементы остаются в БД
     # Проверим, что элементы всё ещё существуют
-    remaining = BasketItem.select().where(BasketItem.basket_id == sample_basket.id).count()
+    remaining = (
+        BasketItem.select().where(BasketItem.basket_id == sample_basket.id).count()
+    )
     assert remaining == 2  # элементы не удалены
 
 
@@ -134,8 +138,7 @@ def test_product_price_history_relationship(sample_product, test_database):
     """Тест связи товара с историей цен."""
     # Создаём несколько записей истории
     histories = [
-        PriceHistory.create(product=sample_product, price=100 + i)
-        for i in range(3)
+        PriceHistory.create(product=sample_product, price=100 + i) for i in range(3)
     ]
     # Получаем историю через обратную ссылку
     product_histories = list(sample_product.price_history)
@@ -147,7 +150,7 @@ def test_basket_items_relationship(sample_basket, sample_product, test_database)
     """Тест связи корзины с элементами."""
     # Создаём несколько элементов
     items = [
-        BasketItem.create(basket=sample_basket, product=sample_product, quantity=i+1)
+        BasketItem.create(basket=sample_basket, product=sample_product, quantity=i + 1)
         for i in range(5)
     ]
     basket_items = list(sample_basket.items)
@@ -155,7 +158,9 @@ def test_basket_items_relationship(sample_basket, sample_product, test_database)
     assert all(item.basket == sample_basket for item in basket_items)
 
 
-def test_product_basket_items_relationship(sample_product, sample_basket, test_database):
+def test_product_basket_items_relationship(
+    sample_product, sample_basket, test_database
+):
     """Тест связи товара с элементами корзины."""
     # Создаём несколько корзин с одним товаром
     basket2 = Basket.create(user_id=222)

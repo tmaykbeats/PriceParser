@@ -1,3 +1,3 @@
 - [ ] fill .env
 - [ ] check google credinitals
-- [ ] fix imports
+- [x] fix imports

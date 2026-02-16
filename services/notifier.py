@@ -2,12 +2,13 @@
 
 from models import Subscription  # Импортируем модель Subscription
 
+
 async def notify_subscribers(bot, prices):
     if not prices:
         return
     latest = get_latest_prices()
     previous = get_previous_prices()
-    
+
     # Подготовим полные отчёты с изменениями для каждого продукта
     full_report_lines = []
     changed_report_lines = []
@@ -51,4 +52,3 @@ async def notify_subscribers(bot, prices):
             logger.error(f"Error sending Telegram report to {user_id}: {str(e)}")
 
     # Email-уведомления оставляем без изменений, если нужно — можно сделать тоже проверку
-

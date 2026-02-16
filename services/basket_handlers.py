@@ -1,20 +1,23 @@
 """
 Обработчики команд Telegram-бота для работы с корзиной покупок.
 """
+
 import logging
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import MessageTextIsEmpty
+
 from models import Basket, BasketItem, Product
 from services.basket import (
-    create_basket,
-    get_user_baskets,
-    get_basket,
     add_to_basket,
-    remove_from_basket,
     calculate_basket_total,
-    get_basket_items,
+    create_basket,
     delete_basket,
+    get_basket,
+    get_basket_items,
+    get_user_baskets,
+    remove_from_basket,
 )
 
 logger = logging.getLogger(__name__)
@@ -29,7 +32,9 @@ async def mybaskets_command(message: types.Message, state: FSMContext):
     try:
         baskets = get_user_baskets(user_id)
         if not baskets:
-            await message.reply("У вас пока нет корзин. Создайте новую командой /create_basket.")
+            await message.reply(
+                "У вас пока нет корзин. Создайте новую командой /create_basket."
+            )
             return
 
         lines = ["*Ваши корзины:*"]
@@ -65,7 +70,7 @@ async def create_basket_command(message: types.Message, state: FSMContext):
             f"Корзина **{basket.name}** создана!\n"
             f"ID: `{basket.id}`\n"
             f"Используйте /add_to_basket {basket.id} <product_id> чтобы добавить товары.",
-            parse_mode="Markdown"
+            parse_mode="Markdown",
         )
     except Exception as e:
         logger.error(f"Ошибка в команде /create_basket: {e}")
@@ -130,7 +135,9 @@ async def basket_command(message: types.Message, state: FSMContext):
 
         items = get_basket_items(basket_id)
         if not items:
-            await message.reply(f"Корзина **{basket.name}** пуста.", parse_mode="Markdown")
+            await message.reply(
+                f"Корзина **{basket.name}** пуста.", parse_mode="Markdown"
+            )
             return
 
         total = calculate_basket_total(basket_id)
@@ -196,11 +203,13 @@ async def add_to_basket_command(message: types.Message, state: FSMContext):
             f"Товар **{product.name}** добавлен в корзину **{basket.name}**.\n"
             f"Количество: {item.quantity}\n"
             f"Стоимость позиции: {product.price * item.quantity:.2f} ₽",
-            parse_mode="Markdown"
+            parse_mode="Markdown",
         )
 
     except ValueError as e:
-        await message.reply("Проверьте правильность числовых параметров (ID и количество).")
+        await message.reply(
+            "Проверьте правильность числовых параметров (ID и количество)."
+        )
     except Exception as e:
         logger.error(f"Ошибка в команде /add_to_basket: {e}")
         await message.reply(f"Не удалось добавить товар: {e}")
@@ -213,7 +222,9 @@ async def remove_from_basket_command(message: types.Message, state: FSMContext):
     await state.finish()
     args = message.get_args()
     if not args:
-        await message.reply("Укажите ID элемента корзины: /remove_from_basket <item_id>")
+        await message.reply(
+            "Укажите ID элемента корзины: /remove_from_basket <item_id>"
+        )
         return
 
     try:
@@ -245,9 +256,11 @@ def register_basket_handlers(dp):
     """
     Регистрирует обработчики команд корзины в диспетчере.
     """
-    dp.register_message_handler(mybaskets_command, commands=['mybaskets'])
-    dp.register_message_handler(create_basket_command, commands=['create_basket'])
-    dp.register_message_handler(delete_basket_command, commands=['delete_basket'])
-    dp.register_message_handler(basket_command, commands=['basket'])
-    dp.register_message_handler(add_to_basket_command, commands=['add_to_basket'])
-    dp.register_message_handler(remove_from_basket_command, commands=['remove_from_basket'])
+    dp.register_message_handler(mybaskets_command, commands=["mybaskets"])
+    dp.register_message_handler(create_basket_command, commands=["create_basket"])
+    dp.register_message_handler(delete_basket_command, commands=["delete_basket"])
+    dp.register_message_handler(basket_command, commands=["basket"])
+    dp.register_message_handler(add_to_basket_command, commands=["add_to_basket"])
+    dp.register_message_handler(
+        remove_from_basket_command, commands=["remove_from_basket"]
+    )
