@@ -22,6 +22,8 @@ from config import BOT_TOKEN
 from handlers import register_handlers
 from services.parser import scrape_prices
 from services.notifier import notify_subscribers
+from services.pit_parser import run_pit_parsing
+from services.pit_db import save_pit_results
 import schedule
 import time
 
@@ -39,6 +41,9 @@ async def main():
     # schedule.every().hour.do(lambda: asyncio.create_task(scrape_and_notify(bot)))
     schedule.every(1).minutes.do(lambda: asyncio.create_task(scrape_and_notify(bot)))
 
+    # Schedule PIT parsing daily at 02:00
+    schedule.every().day.at("02:00").do(lambda: asyncio.create_task(pit_parse_and_save()))
+
     # Run scheduler in background
     async def run_scheduler():
         while True:
@@ -54,6 +59,21 @@ async def scrape_and_notify(bot):
         await notify_subscribers(bot, prices)
     except Exception as e:
         logger.error(f"Error in scrape_and_notify: {str(e)}")
+
+async def pit_parse_and_save():
+    """
+    Запускает парсинг магазинов через PIT и сохраняет результаты в БД.
+    """
+    try:
+        logger.info("Starting PIT parsing...")
+        results = await run_pit_parsing()
+        if results:
+            stats = save_pit_results(results)
+            logger.info(f"PIT parsing completed: {stats}")
+        else:
+            logger.warning("PIT parsing returned no results")
+    except Exception as e:
+        logger.error(f"Error in PIT parsing: {str(e)}")
 
 if __name__ == "__main__":
     asyncio.run(main())

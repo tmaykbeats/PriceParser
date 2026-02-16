@@ -7,6 +7,8 @@ from utils import save_prices, get_latest_prices, get_previous_prices
 from services.parser import scrape_prices
 from services.history import get_price_history, plot_price_history
 from models import Subscription
+from services.pit_handlers import register_pit_handlers
+from services.basket_handlers import register_basket_handlers
 
 
 
@@ -53,6 +55,16 @@ async def help_command(message: types.Message):
         "/sort - Toggle report sorting (by name/price)\n"
         "/history - Show price history graph for the last 7 days\n"
         "/notifychange - Toggle notifications only when prices change\n"
+        "/pit_products - Show products from PIT (optional: store filter)\n"
+        "/price_per_unit - Show price per unit details by product ID\n"
+        "/compare_units - Compare unit prices across stores\n"
+        "/run_pit_now - Run PIT parsing immediately (admin only)\n"
+        "/mybaskets - List your baskets\n"
+        "/create_basket <name> - Create a new basket\n"
+        "/delete_basket <id> - Delete a basket\n"
+        "/basket <id> - Show basket contents with total cost\n"
+        "/add_to_basket <basket_id> <product_id> [quantity] - Add product to basket\n"
+        "/remove_from_basket <item_id> - Remove item from basket\n"
         "/help - Show this help message"
     )
     await message.reply(help_text)
@@ -191,8 +203,12 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(report, commands=['report'])
     dp.register_message_handler(sort_command, commands=['sort'])
     dp.register_message_handler(help_command, commands=['help'])
-    dp.register_message_handler(history_command, commands=['history']) 
+    dp.register_message_handler(history_command, commands=['history'])
     dp.register_message_handler(notify_change_toggle, commands=['notifychange'])
     dp.register_message_handler(report_changes_command, commands=['reportchanges'])
+    # Регистрация обработчиков PIT
+    register_pit_handlers(dp)
+    # Регистрация обработчиков корзины
+    register_basket_handlers(dp)
 
 
